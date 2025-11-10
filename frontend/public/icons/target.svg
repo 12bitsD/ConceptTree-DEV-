@@ -1,0 +1,69 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="targetGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#FF9538;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF7518;stop-opacity:0.5" />
+    </radialGradient>
+  </defs>
+  
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 外层扫描波纹 -->
+    <circle cx="32" cy="32" r="20" stroke="#FF9538" stroke-width="1" opacity="0.3">
+      <animate attributeName="r" values="18;24;18" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- 靶心 - 三层圆圈（带呼吸效果） -->
+    <circle cx="32" cy="32" r="18" stroke="#FF9538" stroke-width="2" fill="none" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="32" cy="32" r="12" stroke="#FF9538" stroke-width="2.5" fill="none" opacity="0.7">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+    <circle cx="32" cy="32" r="6" stroke="#FF9538" stroke-width="2.5" fill="none">
+      <animate attributeName="r" values="6;7;6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- 中心点（带脉冲） -->
+    <circle cx="32" cy="32" r="3" fill="url(#targetGradient)">
+      <animate attributeName="r" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="32" cy="32" r="1.5" fill="white" opacity="0.8"/>
+    
+    <!-- 十字准线 -->
+    <line x1="32" y1="26" x2="32" y2="22" stroke="#FF9538" stroke-width="1.5">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="32" y1="38" x2="32" y2="42" stroke="#FF9538" stroke-width="1.5">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="26" y1="32" x2="22" y2="32" stroke="#FF9538" stroke-width="1.5">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+    </line>
+    <line x1="38" y1="32" x2="42" y2="32" stroke="#FF9538" stroke-width="1.5">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+    </line>
+    
+    <!-- 箭头指向中心（带飞行动画） -->
+    <g class="arrow">
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values="20 -20; 0 0"
+        dur="2s"
+        repeatCount="indefinite"/>
+      <path d="M52 12l-16 16" stroke="#16AA98" stroke-width="3" stroke-linecap="round"/>
+      <path d="M36 28l4-4" stroke="#16AA98" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M36 28l-4-4" stroke="#16AA98" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- 箭头尾部 -->
+      <line x1="52" y1="12" x2="50" y2="10" stroke="#16AA98" stroke-width="2"/>
+      <line x1="52" y1="12" x2="54" y2="10" stroke="#16AA98" stroke-width="2"/>
+    </g>
+    
+    <!-- 击中特效点 -->
+    <circle cx="32" cy="32" r="8" stroke="#16AA98" stroke-width="2" opacity="0">
+      <animate attributeName="r" values="3;10;12" dur="2s" repeatCount="indefinite" begin="1.8s"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="2s" repeatCount="indefinite" begin="1.8s"/>
+    </circle>
+  </g>
+</svg>

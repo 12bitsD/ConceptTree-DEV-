@@ -1,0 +1,85 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="treeGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF9538;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF7518;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="treeGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#16AA98;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0E9988;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- 连接线（带流动效果） -->
+    <g stroke-width="1.5" opacity="0.6">
+      <line x1="32" y1="16" x2="20" y2="24" stroke="#16AA98" stroke-dasharray="2 2">
+        <animate attributeName="stroke-dashoffset" from="0" to="4" dur="1s" repeatCount="indefinite"/>
+      </line>
+      <line x1="32" y1="16" x2="44" y2="24" stroke="#16AA98" stroke-dasharray="2 2">
+        <animate attributeName="stroke-dashoffset" from="0" to="4" dur="1s" repeatCount="indefinite"/>
+      </line>
+      
+      <line x1="20" y1="32" x2="12" y2="40" stroke="#FF9538" stroke-dasharray="2 2">
+        <animate attributeName="stroke-dashoffset" from="0" to="4" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+      </line>
+      <line x1="20" y1="32" x2="28" y2="40" stroke="#FF9538" stroke-dasharray="2 2">
+        <animate attributeName="stroke-dashoffset" from="0" to="4" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+      </line>
+      <line x1="44" y1="32" x2="36" y2="40" stroke="#FF9538" stroke-dasharray="2 2">
+        <animate attributeName="stroke-dashoffset" from="0" to="4" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+      </line>
+      <line x1="44" y1="32" x2="52" y2="40" stroke="#FF9538" stroke-dasharray="2 2">
+        <animate attributeName="stroke-dashoffset" from="0" to="4" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+      </line>
+    </g>
+    
+    <!-- 顶层节点（带脉冲） -->
+    <g class="root-node">
+      <circle cx="32" cy="12" r="6" stroke="url(#treeGradient1)" stroke-width="2" fill="none" opacity="0.3">
+        <animate attributeName="r" values="6;7.5;6" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="32" cy="12" r="4.5" stroke="url(#treeGradient1)" stroke-width="2.5" fill="none" />
+      <circle cx="32" cy="12" r="2" fill="#FF9538" opacity="0.5"/>
+    </g>
+    
+    <!-- 第二层节点（依次展开动画） -->
+    <g class="level-2">
+      <circle cx="20" cy="28" r="4.5" stroke="url(#treeGradient2)" stroke-width="2.5" fill="none">
+        <animate attributeName="r" values="0;4.5" dur="0.5s" fill="freeze"/>
+      </circle>
+      <circle cx="20" cy="28" r="2" fill="#16AA98" opacity="0.5">
+        <animate attributeName="r" values="0;2" dur="0.5s" fill="freeze"/>
+      </circle>
+      
+      <circle cx="44" cy="28" r="4.5" stroke="url(#treeGradient2)" stroke-width="2.5" fill="none">
+        <animate attributeName="r" values="0;4.5" dur="0.5s" fill="freeze" begin="0.2s"/>
+      </circle>
+      <circle cx="44" cy="28" r="2" fill="#16AA98" opacity="0.5">
+        <animate attributeName="r" values="0;2" dur="0.5s" fill="freeze" begin="0.2s"/>
+      </circle>
+    </g>
+    
+    <!-- 第三层节点（依次展开） -->
+    <g class="level-3">
+      <circle cx="12" cy="44" r="4" stroke="url(#treeGradient1)" stroke-width="2" fill="none">
+        <animate attributeName="r" values="0;4" dur="0.4s" fill="freeze" begin="0.5s"/>
+      </circle>
+      <circle cx="28" cy="44" r="4" stroke="url(#treeGradient1)" stroke-width="2" fill="none">
+        <animate attributeName="r" values="0;4" dur="0.4s" fill="freeze" begin="0.6s"/>
+      </circle>
+      <circle cx="36" cy="44" r="4" stroke="url(#treeGradient1)" stroke-width="2" fill="none">
+        <animate attributeName="r" values="0;4" dur="0.4s" fill="freeze" begin="0.7s"/>
+      </circle>
+      <circle cx="52" cy="44" r="4" stroke="url(#treeGradient1)" stroke-width="2" fill="none">
+        <animate attributeName="r" values="0;4" dur="0.4s" fill="freeze" begin="0.8s"/>
+      </circle>
+    </g>
+    
+    <!-- 根节点指示器 -->
+    <path d="M32 6l-2 -3h4z" fill="#FF9538">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>
