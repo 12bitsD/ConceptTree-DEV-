@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import '../styles/LoadingStages.css'
 
-const LOADING_STAGES = [
+const DEFAULT_STAGES = [
   {
     id: 1,
     message: '// Initializing CodeMonkey...',
@@ -34,30 +34,31 @@ const LOADING_STAGES = [
   }
 ]
 
-export default function LoadingStages() {
-  const [currentStage, setCurrentStage] = useState(0)
+export default function LoadingStages({ onComplete, stages, current, progress, message }) {
+  const stageList = stages && stages.length ? stages : DEFAULT_STAGES
+  const [currentStage, setCurrentStage] = useState(current ?? 0)
   const [completedStages, setCompletedStages] = useState([])
 
   useEffect(() => {
-    if (currentStage >= LOADING_STAGES.length) {
-      // 所有阶段完成，延迟一点再回调
-      const timer = setTimeout(() => {
-        onComplete?.()
-      }, 300)
+    if (typeof current === 'number') {
+      setCurrentStage(current)
+      setCompletedStages(stageList.filter((s, idx) => idx < current).map((s) => s.id))
+      return
+    }
+    if (currentStage >= stageList.length) {
+      const timer = setTimeout(() => { onComplete?.() }, 300)
       return () => clearTimeout(timer)
     }
-
-    const stage = LOADING_STAGES[currentStage]
+    const stage = stageList[currentStage]
     const timer = setTimeout(() => {
       setCompletedStages(prev => [...prev, stage.id])
       setCurrentStage(prev => prev + 1)
     }, stage.duration)
-
     return () => clearTimeout(timer)
-  }, [currentStage, onComplete])
+  }, [currentStage, onComplete, current, stageList])
 
-  const currentStageData = LOADING_STAGES[currentStage]
-  const progress = ((currentStage + 1) / LOADING_STAGES.length) * 100
+  const currentStageData = stageList[currentStage]
+  const prog = typeof progress === 'number' ? progress : (((currentStage + 1) / stageList.length) * 100)
 
   return (
     <div className="loading-stages-container">
@@ -94,24 +95,21 @@ export default function LoadingStages() {
               width="48"
               height="48"
             />
-            <p className="stage-message">{currentStageData.message}</p>
+            <p className="stage-message">{message || currentStageData.message}</p>
           </div>
         )}
 
         {/* 进度条 */}
         <div className="loading-progress-bar">
-          <div 
-            className="loading-progress-fill" 
-            style={{ width: `${progress}%` }}
-          />
+          <div className="loading-progress-fill" style={{ width: `${prog}%` }} />
         </div>
         <div className="loading-progress-text">
-          {Math.round(progress)}% Complete
+          {Math.round(prog)}% Complete
         </div>
 
         {/* 已完成阶段列表 */}
         <div className="completed-stages">
-          {LOADING_STAGES.map((stage, index) => {
+          {stageList.map((stage, index) => {
             const isCompleted = completedStages.includes(stage.id)
             const isCurrent = index === currentStage
             

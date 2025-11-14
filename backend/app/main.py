@@ -1,6 +1,10 @@
 from fastapi import FastAPI
+from dotenv import load_dotenv
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import concept
+
+load_dotenv()
 
 app = FastAPI(
     title="ConceptTree API",
@@ -9,9 +13,10 @@ app = FastAPI(
 )
 
 # CORS配置
+origins = os.getenv("CORS_ORIGINS", "*").split(",") if os.getenv("CORS_ORIGINS") else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -19,22 +19,46 @@ function App() {
   const [user, setUser] = useState(getUser())
   const [showLoginGlobal, setShowLoginGlobal] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState(0)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingMessage, setLoadingMessage] = useState('')
 
   // TODO: 连接后端API
-  async function handleLoadTree(conceptName) {
+  async function handleLoadTree(conceptName, opts = {}) {
     setError(null)
     setLoading(true)
     setPage('loading')
+    setLoadingStage(0)
+    setLoadingProgress(0)
+    setLoadingMessage('')
     
     try {
+      const progressTimer = setInterval(async () => {
+        try {
+          const r = await fetch(`${API_BASE_URL}/api/progress/${encodeURIComponent(conceptName)}`)
+          if (r.ok) {
+            const p = await r.json()
+            setLoadingStage(p.stage || 0)
+            setLoadingProgress(p.percent || 0)
+            setLoadingMessage(p.message || '')
+          }
+        } catch {}
+      }, 400)
       // 调用后端API获取依赖树
-      const response = await fetch(`${API_BASE_URL}/api/concept/${encodeURIComponent(conceptName)}`)
+      const params = new URLSearchParams()
+      params.set('depth', '5')
+      params.set('width', '6')
+      if (opts.focus && opts.focus.trim()) params.set('focus', opts.focus.trim())
+      if (opts.minWidth && opts.minWidth.trim()) params.set('minWidth', opts.minWidth.trim())
+      if (opts.priority && opts.priority.trim()) params.set('priority', opts.priority.trim())
+      const response = await fetch(`${API_BASE_URL}/api/concept/${encodeURIComponent(conceptName)}?${params.toString()}`)
       
       if (!response.ok) {
         throw new Error('获取依赖树失败')
       }
       
       const result = await response.json()
+      clearInterval(progressTimer)
       
       // 获取用户进度
       const stored = user ? getMasteredForUser(user.name, conceptName) : getMastered(conceptName)
@@ -45,9 +69,12 @@ function App() {
       setPage('tree')
       
     } catch (e) {
-      setError(e.message)
+      setError(e.message || '获取依赖树失败')
       setPage('home')
     } finally {
+      setLoadingMessage('')
+      setLoadingStage(0)
+      setLoadingProgress(0)
       setLoading(false)
     }
   }
@@ -82,7 +109,7 @@ function App() {
   }
 
   if (page === 'loading') {
-    return <LoadingStages />
+    return <LoadingStages current={loadingStage} progress={loadingProgress} message={loadingMessage} />
   }
   
   if (page === 'home') {

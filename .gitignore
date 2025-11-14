@@ -1,20 +1,27 @@
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-env/
-ENV/
+*.pyc
+*.pyo
+*.pyd
 *.egg-info/
 dist/
 build/
+*.egg
+*.whl
+*.log
+*.sqlite3
+*.db
+*.env.local
+*.env.*.local
 
 # Node
 node_modules/
-npm-debug.log*
-.pnpm-debug.log*
+*.log
+*.lock
+*.cache
+dist/
+build/
+.vite/
 
 # IDE
 .vscode/
@@ -22,20 +29,17 @@ npm-debug.log*
 *.swp
 *.swo
 *~
-.trae/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Env
-.env
-.env.local
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Build
-frontend/dist/
-frontend/build/
-
-# Logs
-*.log
-logs/
+# Temporary
+*.tmp
+*.temp
+*.bak

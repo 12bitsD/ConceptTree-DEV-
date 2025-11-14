@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { topoSort, nextSuggestion } from '../utils/suggestions.js'
+import { traverseDFS, findNode } from '../utils/tree-utils.js'
 import GraphView from '../components/GraphView.jsx'
 import ConceptCard from '../components/ConceptCard.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
@@ -16,25 +16,52 @@ export default function TreePage({
   const [selectedNodeId, setSelectedNodeId] = useState('__overall__')
   const [isReadingMode, setIsReadingMode] = useState(false)
 
-  const suggestions = useMemo(() => {
-    if (!tree) return []
-    return topoSort(tree)
-  }, [tree])
-
+  // 使用真正的树结构计算进度
   const progress = useMemo(() => {
-    if (!tree) return { mastered: 0, total: 0 }
-    const total = tree.nodes.length
-    const mastered = tree.nodes.filter(n => masteredSet.has(n.id)).length
+    if (!tree || !tree.root) return { mastered: 0, total: 0 }
+    
+    let total = 0
+    let mastered = 0
+    
+    // 使用深度优先遍历计算进度
+    traverseDFS(tree.root, (node) => {
+      total++
+      if (masteredSet.has(node.id)) {
+        mastered++
+      }
+    })
+    
     return { mastered, total }
   }, [tree, masteredSet])
 
+  // 获取学习建议 - 基于树遍历
+  const suggestions = useMemo(() => {
+    if (!tree || !tree.root) return []
+    
+    const result = []
+    traverseDFS(tree.root, (node) => {
+      if (!masteredSet.has(node.id)) {
+        result.push(node)
+      }
+    })
+    
+    // 按难度等级排序
+    return result.sort((a, b) => a.level - b.level)
+  }, [tree, masteredSet])
+
   function goNextSuggestion() {
-    if (!tree) return
-    const nextId = nextSuggestion(tree, masteredSet)
-    if (nextId) setSelectedNodeId(nextId)
+    if (!tree || !tree.root || suggestions.length === 0) return
+    const nextNode = suggestions[0]
+    if (nextNode) setSelectedNodeId(nextNode.id)
   }
 
   const progressPercent = progress.total > 0 ? (progress.mastered / progress.total) * 100 : 0
+
+  // 获取当前选中的节点
+  const selectedNode = useMemo(() => {
+    if (!tree || !tree.root || selectedNodeId === '__overall__') return null
+    return findNode(tree.root, (node) => node.id === selectedNodeId)
+  }, [tree, selectedNodeId])
 
   return (
     <div className={`tree-page-container ${isReadingMode ? 'reading-mode' : ''}`}>
@@ -80,10 +107,11 @@ export default function TreePage({
 
         {/* 右侧：详情 */}
         <main className="tree-detail">
-          {selectedNodeId ? (
+          {selectedNode ? (
             <ConceptCard
               tree={tree}
               nodeId={selectedNodeId}
+              node={selectedNode}
               mastered={masteredSet.has(selectedNodeId)}
               onToggleMastered={() => onToggleMastered(selectedNodeId)}
               onNext={goNextSuggestion}
@@ -94,6 +122,11 @@ export default function TreePage({
             <div className="empty-hint">
               <div className="empty-icon">🎯</div>
               <p>点击左侧节点查看详情</p>
+              {suggestions.length > 0 && (
+                <button onClick={goNextSuggestion} className="btn-suggestion">
+                  开始学习: {suggestions[0]?.name}
+                </button>
+              )}
             </div>
           )}
           

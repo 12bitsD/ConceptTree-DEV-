@@ -28,62 +28,49 @@ function labelForType(type) {
   }
 }
 
+import { findNode, getNodeLevel, traverseDFS } from '../utils/tree-utils.js'
+
 export default function ConceptCard({ tree, nodeId, mastered, onToggleMastered, onNext, isReadingMode, onToggleReadingMode }) {
-  const node = tree.nodes.find((n) => n.id === nodeId)
+  const node = tree?.root ? findNode(tree.root, (n) => n.id === nodeId) : null
   const card = tree.cards?.[nodeId]
-  const rootId = tree.root || tree.nodes[0]?.id
-  const idToLabel = new Map(tree.nodes.map((n) => [n.id, n.label]))
+  const idToLabel = (() => {
+    const map = new Map()
+    if (tree?.root) {
+      traverseDFS(tree.root, (n) => {
+        map.set(n.id, n.name || n.id)
+      })
+    }
+    return map
+  })()
 
   function computeDepth(targetId) {
-    if (!rootId) return 0
-    const idToNode = new Map()
-    tree.nodes.forEach((n) => idToNode.set(n.id, n))
-    const visited = new Set([rootId])
-    const queue = [{ id: rootId, depth: 0 }]
-    while (queue.length) {
-      const { id, depth } = queue.shift()
-      if (id === targetId) return depth
-      const prereqs = idToNode.get(id)?.prerequisites || []
-      for (const p of prereqs) {
-        if (!visited.has(p)) {
-          visited.add(p)
-          queue.push({ id: p, depth: depth + 1 })
-        }
-      }
-    }
-    return 0
-  }
-
-  function buildDependentsMap() {
-    const m = new Map()
-    for (const n of tree.nodes) {
-      const pres = n.prerequisites || []
-      for (const p of pres) {
-        if (!m.has(p)) m.set(p, [])
-        m.get(p).push(n.id)
-      }
-    }
-    return m
+    if (!tree?.root || !targetId) return 0
+    const targetNode = findNode(tree.root, (n) => n.id === targetId)
+    if (!targetNode) return 0
+    return getNodeLevel(targetNode, tree.root)
   }
 
   function findPathToRoot(startId) {
-    if (!startId || !rootId) return []
-    if (startId === rootId) return [rootId]
-    const dependentsMap = buildDependentsMap()
-    const visited = new Set([startId])
-    const queue = [{ id: startId, path: [startId] }]
-    while (queue.length) {
-      const { id, path } = queue.shift()
-      if (id === rootId) return path
-      const nexts = dependentsMap.get(id) || []
-      for (const nx of nexts) {
-        if (!visited.has(nx)) {
-          visited.add(nx)
-          queue.push({ id: nx, path: [...path, nx] })
+    if (!tree?.root || !startId) return []
+    const path = []
+    let found = false
+    function dfs(node, acc) {
+      if (found) return
+      const nextAcc = [...acc, node.id]
+      if (node.id === startId) {
+        path.push(...nextAcc)
+        found = true
+        return
+      }
+      if (node.children && node.children.length) {
+        for (const child of node.children) {
+          dfs(child, nextAcc)
+          if (found) return
         }
       }
     }
-    return []
+    dfs(tree.root, [])
+    return path
   }
 
   const isOverall = nodeId === '__overall__'
@@ -101,7 +88,7 @@ export default function ConceptCard({ tree, nodeId, mastered, onToggleMastered, 
       {/* 卡片头部 */}
       <div className="card-header-modern">
         <div className="card-title-section">
-          <h2 className="card-title">{isOverall ? tree.concept : node.label}</h2>
+          <h2 className="card-title">{isOverall ? tree.concept : node.name}</h2>
           {!isOverall && (
             <div className="status-badges">
               <span className={`status-badge ${mastered ? 'status-mastered' : 'status-unmastered'}`}>
@@ -196,7 +183,7 @@ export default function ConceptCard({ tree, nodeId, mastered, onToggleMastered, 
           <div className="section">
             <div className="section-title">前置知识</div>
             <div className="section-content">
-              {node.prerequisites?.length ? (
+              {node?.prerequisites?.length ? (
                 <div className="chips">
                   {node.prerequisites.map((p) => (
                     <span className="chip" key={p}>{idToLabel.get(p) || p}</span>
