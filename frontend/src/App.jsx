@@ -23,42 +23,73 @@ function App() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingMessage, setLoadingMessage] = useState('')
 
-  // TODO: 连接后端API
+  // 连接后端API
   async function handleLoadTree(conceptName, opts = {}) {
     setError(null)
     setLoading(true)
     setPage('loading')
-    setLoadingStage(0)
+    setLoadingStage(1)  // 从stage 1开始，与后端一致
     setLoadingProgress(0)
-    setLoadingMessage('')
+    setLoadingMessage('Initializing CodeMonkey...')
+    
+    let progressTimer = null
     
     try {
-      const progressTimer = setInterval(async () => {
+      // 启动进度轮询
+      progressTimer = setInterval(async () => {
         try {
           const r = await fetch(`${API_BASE_URL}/api/progress/${encodeURIComponent(conceptName)}`)
           if (r.ok) {
             const p = await r.json()
-            setLoadingStage(p.stage || 0)
+            setLoadingStage(p.stage || 1)
             setLoadingProgress(p.percent || 0)
-            setLoadingMessage(p.message || '')
+            setLoadingMessage(p.message || '处理中...')
+            console.log('进度更新:', p)
           }
-        } catch {}
-      }, 400)
+        } catch (err) {
+          console.warn('进度轮询失败:', err)
+        }
+      }, 500)  // 每500ms轮询一次
+      
       // 调用后端API获取依赖树
       const params = new URLSearchParams()
       params.set('depth', '5')
       params.set('width', '6')
+      params.set('refine', 'true')  // 启用AI优化功能
       if (opts.focus && opts.focus.trim()) params.set('focus', opts.focus.trim())
       if (opts.minWidth && opts.minWidth.trim()) params.set('minWidth', opts.minWidth.trim())
       if (opts.priority && opts.priority.trim()) params.set('priority', opts.priority.trim())
-      const response = await fetch(`${API_BASE_URL}/api/concept/${encodeURIComponent(conceptName)}?${params.toString()}`)
       
+      console.log('发送请求:', `${API_BASE_URL}/api/concept/${encodeURIComponent(conceptName)}`)
+      const response = await fetch(`${API_BASE_URL}/api/concept/${encodeURIComponent(conceptName)}?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      // 获取响应详情
       if (!response.ok) {
-        throw new Error('获取依赖树失败')
+        let errorMsg = `HTTP ${response.status}: ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          if (errorData.detail) {
+            errorMsg = errorData.detail
+          }
+        } catch {
+          // 无法解析JSON，使用默认错误消息
+        }
+        throw new Error(errorMsg)
       }
       
       const result = await response.json()
-      clearInterval(progressTimer)
+      console.log('成功获取树:', result)
+      
+      // 清理进度轮询
+      if (progressTimer) {
+        clearInterval(progressTimer)
+        progressTimer = null
+      }
       
       // 获取用户进度
       const stored = user ? getMasteredForUser(user.name, conceptName) : getMastered(conceptName)
@@ -69,9 +100,19 @@ function App() {
       setPage('tree')
       
     } catch (e) {
-      setError(e.message || '获取依赖树失败')
+      console.error('加载概念树失败:', e)
+      // 清理进度轮询
+      if (progressTimer) {
+        clearInterval(progressTimer)
+        progressTimer = null
+      }
+      setError(e.message || '获取依赖树失败，请检查网络连接或稍后重试')
       setPage('home')
     } finally {
+      // 清理状态
+      if (progressTimer) {
+        clearInterval(progressTimer)
+      }
       setLoadingMessage('')
       setLoadingStage(0)
       setLoadingProgress(0)

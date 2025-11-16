@@ -36,29 +36,31 @@ const DEFAULT_STAGES = [
 
 export default function LoadingStages({ onComplete, stages, current, progress, message }) {
   const stageList = stages && stages.length ? stages : DEFAULT_STAGES
-  const [currentStage, setCurrentStage] = useState(current ?? 0)
+  const [currentStageIdx, setCurrentStageIdx] = useState(0)
   const [completedStages, setCompletedStages] = useState([])
 
   useEffect(() => {
+    // 将后端阶段ID(1..N)映射为前端索引(0..len-1)
     if (typeof current === 'number') {
-      setCurrentStage(current)
-      setCompletedStages(stageList.filter((s, idx) => idx < current).map((s) => s.id))
+      const idx = Math.max(0, Math.min(stageList.length - 1, (current - 1)))
+      setCurrentStageIdx(idx)
+      setCompletedStages(stageList.filter((s) => s.id < current).map((s) => s.id))
       return
     }
-    if (currentStage >= stageList.length) {
+    if (currentStageIdx >= stageList.length) {
       const timer = setTimeout(() => { onComplete?.() }, 300)
       return () => clearTimeout(timer)
     }
-    const stage = stageList[currentStage]
+    const stage = stageList[currentStageIdx]
     const timer = setTimeout(() => {
       setCompletedStages(prev => [...prev, stage.id])
-      setCurrentStage(prev => prev + 1)
+      setCurrentStageIdx(prev => prev + 1)
     }, stage.duration)
     return () => clearTimeout(timer)
-  }, [currentStage, onComplete, current, stageList])
+  }, [currentStageIdx, onComplete, current, stageList])
 
-  const currentStageData = stageList[currentStage]
-  const prog = typeof progress === 'number' ? progress : (((currentStage + 1) / stageList.length) * 100)
+  const currentStageData = stageList[currentStageIdx]
+  const prog = typeof progress === 'number' ? progress : (((currentStageIdx + 1) / stageList.length) * 100)
 
   return (
     <div className="loading-stages-container">
@@ -111,7 +113,7 @@ export default function LoadingStages({ onComplete, stages, current, progress, m
         <div className="completed-stages">
           {stageList.map((stage, index) => {
             const isCompleted = completedStages.includes(stage.id)
-            const isCurrent = index === currentStage
+            const isCurrent = index === currentStageIdx
             
             return (
               <div 

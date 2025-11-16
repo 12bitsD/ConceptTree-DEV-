@@ -1,10 +1,22 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+import logging
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import concept
 
-load_dotenv()
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+    ]
+)
+
+_base_dir = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=_base_dir / ".env")
 
 app = FastAPI(
     title="ConceptTree API",
