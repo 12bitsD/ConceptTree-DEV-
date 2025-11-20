@@ -339,3 +339,30 @@
     padding: var(--space-md);
   }
 }
+
+.payload-preview {
+  margin-top: var(--space-xl);
+  max-width: 600px;
+  width: 100%;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-medium);
+  background: var(--white);
+  padding: var(--space-md);
+}
+
+.payload-title {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-sm);
+}
+
+.payload-json {
+  margin: 0;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  padding: var(--space-sm);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text-color);
+  overflow: auto;
+}

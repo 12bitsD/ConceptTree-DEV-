@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import concept
+from app.api import auth
+from app.api import prompt
+from app.api import loading
 
 app = FastAPI(
     title="ConceptTree API",
@@ -19,6 +22,9 @@ app.add_middleware(
 
 # 路由
 app.include_router(concept.router, prefix="/api", tags=["概念"])
+app.include_router(prompt.router, prefix="/api", tags=["提示"])
+app.include_router(loading.router, prefix="/api", tags=["加载"])
+app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
 
 @app.get("/")
 async def root():

@@ -12,7 +12,6 @@ export default function Toolbar({
   onToggleReadingMode,
   theme,
   onThemeChange,
-  showSearch,
   onSearchToggle
 }) {
   const [showPath, setShowPath] = useState(false)

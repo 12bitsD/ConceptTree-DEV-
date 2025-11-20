@@ -16,7 +16,7 @@ const COLOR_MAP = {
 }
 
 // 可用的图标名称列表（用于类型检查和文档）
-export const AVAILABLE_ICONS = [
+const AVAILABLE_ICONS = [
   // 核心品牌
   'monkey',
   

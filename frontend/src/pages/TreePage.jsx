@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { topoSort, nextSuggestion } from '../utils/suggestions.js'
+import { nextSuggestion } from '../utils/suggestions.js'
 import GraphView from '../components/GraphView.jsx'
 import ConceptCard from '../components/ConceptCard.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
@@ -16,10 +16,7 @@ export default function TreePage({
   const [selectedNodeId, setSelectedNodeId] = useState('__overall__')
   const [isReadingMode, setIsReadingMode] = useState(false)
 
-  const suggestions = useMemo(() => {
-    if (!tree) return []
-    return topoSort(tree)
-  }, [tree])
+  // 学习顺序在按钮弹层中计算时再取用
 
   const progress = useMemo(() => {
     if (!tree) return { mastered: 0, total: 0 }

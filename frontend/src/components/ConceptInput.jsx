@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function ConceptInput({ onSubmit, error }) {
+export default function ConceptInput({ onSubmit, error, loading }) {
   const [value, setValue] = useState('')
 
   function submit(e) {
@@ -19,7 +19,7 @@ export default function ConceptInput({ onSubmit, error }) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
-        <button className="primary" type="submit">
+        <button className="primary" type="submit" disabled={!!loading}>
           生成依赖树
         </button>
       </form>

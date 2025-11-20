@@ -34,7 +34,7 @@ const LOADING_STAGES = [
   }
 ]
 
-export default function LoadingStages() {
+export default function LoadingStages({ onComplete, payload }) {
   const [currentStage, setCurrentStage] = useState(0)
   const [completedStages, setCompletedStages] = useState([])
 
@@ -54,7 +54,26 @@ export default function LoadingStages() {
     }, stage.duration)
 
     return () => clearTimeout(timer)
-  }, [currentStage, onComplete])
+  }, [currentStage])
+
+  useEffect(() => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    if (!payload) return
+    let aborted = false
+    ;(async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/loading/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) return
+        if (aborted) return
+        void (await res.json())
+      } catch { void 0 }
+    })()
+    return () => { aborted = true }
+  }, [payload])
 
   const currentStageData = LOADING_STAGES[currentStage]
   const progress = ((currentStage + 1) / LOADING_STAGES.length) * 100
@@ -109,26 +128,33 @@ export default function LoadingStages() {
           {Math.round(progress)}% Complete
         </div>
 
-        {/* 已完成阶段列表 */}
-        <div className="completed-stages">
-          {LOADING_STAGES.map((stage, index) => {
-            const isCompleted = completedStages.includes(stage.id)
-            const isCurrent = index === currentStage
-            
-            return (
-              <div 
-                key={stage.id}
-                className={`stage-item ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}`}
-              >
-                <span className="stage-check">
-                  {isCompleted ? '✓' : isCurrent ? '⟳' : '○'}
-                </span>
-                <span className="stage-text">{stage.message}</span>
-              </div>
-            )
-          })}
-        </div>
+      {/* 已完成阶段列表 */}
+      <div className="completed-stages">
+        {LOADING_STAGES.map((stage, index) => {
+          const isCompleted = completedStages.includes(stage.id)
+          const isCurrent = index === currentStage
+          
+          return (
+            <div 
+              key={stage.id}
+              className={`stage-item ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}`}
+            >
+              <span className="stage-check">
+                {isCompleted ? '✓' : isCurrent ? '⟳' : '○'}
+              </span>
+              <span className="stage-text">{stage.message}</span>
+            </div>
+          )
+        })}
       </div>
+
+      {payload && (
+        <div className="payload-preview">
+          <div className="payload-title">Payload</div>
+          <pre className="payload-json">{JSON.stringify(payload, null, 2)}</pre>
+        </div>
+      )}
+    </div>
 
       {/* 底部提示 */}
       <div className="loading-footer">

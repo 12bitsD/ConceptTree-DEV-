@@ -1,5 +1,8 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 from app.models.concept import ConceptTree, ConceptNode
+from app.services.ai_service import generate_concept_tree
 
 router = APIRouter()
 
@@ -50,5 +53,17 @@ async def get_concept_tree(concept_name: str):
             "concept": concept_name,
             "tree": tree.model_dump()
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class GenerateRequest(BaseModel):
+    concept: str
+    details: Optional[Dict[str, Any]] = None
+
+@router.post("/concept")
+async def post_concept(req: GenerateRequest):
+    try:
+        tree = await generate_concept_tree(req.concept)
+        return {"concept": req.concept, "tree": tree.model_dump()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
