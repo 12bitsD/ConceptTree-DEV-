@@ -4,6 +4,7 @@ from app.api import concept
 from app.api import auth
 from app.api import prompt
 from app.api import loading
+import os
 
 app = FastAPI(
     title="ConceptTree API",
@@ -12,9 +13,11 @@ app = FastAPI(
 )
 
 # CORS配置
+origins_env = os.getenv("CORS_ORIGINS")
+origins = [o.strip() for o in origins_env.split(",") if o.strip()] if origins_env else ["http://localhost:5173", "http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -15,30 +15,30 @@ async def generate_concept_tree(concept: str) -> ConceptTree:
     nodes = [
         ConceptNode(
             id="1",
-            name=concept,
+            label=concept,
             description=f"目标概念: {concept}",
-            dependencies=["2", "3"],
+            prerequisites=["2", "3"],
             level=2
         ),
         ConceptNode(
             id="2",
-            name=f"{concept} - 前置概念1",
+            label=f"{concept} - 前置概念1",
             description="前置概念的描述",
-            dependencies=["4"],
+            prerequisites=["4"],
             level=1
         ),
         ConceptNode(
             id="3",
-            name=f"{concept} - 前置概念2",
+            label=f"{concept} - 前置概念2",
             description="另一个前置概念",
-            dependencies=["4"],
+            prerequisites=["4"],
             level=1
         ),
         ConceptNode(
             id="4",
-            name="基础知识",
+            label="基础知识",
             description="最基础的概念",
-            dependencies=[],
+            prerequisites=[],
             level=0
         ),
     ]
@@ -46,5 +46,6 @@ async def generate_concept_tree(concept: str) -> ConceptTree:
     return ConceptTree(
         target=concept,
         nodes=nodes,
-        total_nodes=len(nodes)
+        total_nodes=len(nodes),
+        root="1"
     )
