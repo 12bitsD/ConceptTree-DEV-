@@ -39,3 +39,6 @@ frontend/build/
 # Logs
 *.log
 logs/
+
+# DB
+*.sqlite3

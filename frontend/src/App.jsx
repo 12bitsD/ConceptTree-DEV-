@@ -25,6 +25,7 @@ function App() {
   const [refineLoading, setRefineLoading] = useState(false)
   const [typedText, setTypedText] = useState('')
   const [overlayProgress, setOverlayProgress] = useState(0)
+  const [refineError, setRefineError] = useState('')
   const overlayMessages = useMemo(() => ['解析关键词...', '理解意图与场景...', '生成细化维度...', '筛选建议选项...'], [])
   useEffect(() => {
     if (!refineLoading) return
@@ -110,6 +111,7 @@ function App() {
     setError(null)
     setPendingConcept(conceptName)
     setRefineLoading(true)
+    setRefineError('')
     const start = Date.now()
     try {
       const res = await fetch(`${API_BASE_URL}/api/prompt/refine`, {
@@ -121,16 +123,16 @@ function App() {
       const data = await res.json()
       const opts = Array.isArray(data.options) ? data.options : []
       setRefineOptions(opts)
-      setPage('refine')
+      if (!opts.length) setRefineError('细化选项生成失败')
       const elapsed = Date.now() - start
       const hold = Math.max(0, 700 - elapsed)
-      setTimeout(() => setRefineLoading(false), hold)
+      setTimeout(() => { setRefineLoading(false); setPage('refine') }, hold)
     } catch {
       setRefineOptions([])
-      setPage('refine')
+      setRefineError('细化选项生成失败')
       const elapsed = Date.now() - start
       const hold = Math.max(0, 700 - elapsed)
-      setTimeout(() => setRefineLoading(false), hold)
+      setTimeout(() => { setRefineLoading(false); setPage('refine') }, hold)
     }
   }
 
@@ -271,7 +273,19 @@ function App() {
           <h1>ConceptTree</h1>
           <p className="subtitle">// 细节补充</p>
         </header>
-        {refineOptions && (
+        {refineLoading && (
+          <div className="overlay-mask">
+            <div className="overlay-card">
+              <div className="overlay-title">正在分析你的问题</div>
+              <div className="overlay-subtitle">{pendingConcept || concept}</div>
+              <div className="overlay-terminal">{typedText}</div>
+              <div className="overlay-progress">
+                <div className="overlay-progress-fill" style={{ width: `${overlayProgress}%` }} />
+              </div>
+            </div>
+          </div>
+        )}
+        {Array.isArray(refineOptions) && refineOptions.length > 0 ? (
           <RefineDialog
             concept={pendingConcept}
             options={refineOptions}
@@ -279,6 +293,18 @@ function App() {
             onSkip={() => handleLoadTree(pendingConcept)}
             onClose={() => { setPage('home') }}
           />
+        ) : (
+          <div className="refine-pop">
+            <div className="modern-toolbar">
+              <span className="chip">{pendingConcept}</span>
+              <button className="toolbar-btn" onClick={() => handleConceptSubmit(pendingConcept)}>重试</button>
+              <button className="toolbar-btn secondary" onClick={() => handleLoadTree(pendingConcept)}>直接生成</button>
+              <button className="toolbar-btn" onClick={() => { setPage('home') }}>关闭</button>
+            </div>
+            <div className="refine-content">
+              <div className="muted">{refineError || '暂未生成可用的细化选项'}</div>
+            </div>
+          </div>
         )}
       </div>
     )

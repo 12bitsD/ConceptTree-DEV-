@@ -7,7 +7,6 @@ export default function RefineDialog({ concept, options, onConfirm, onSkip, onCl
       if (o.type === 'multi-select') obj[o.id] = o.defaultChecked ? (o.suggested || []) : []
       else obj[o.id] = ''
     }
-    if (!options || options.length === 0) obj.freeform = ''
     return obj
   }, [options])
   const [values, setValues] = useState(init)
@@ -50,9 +49,6 @@ export default function RefineDialog({ concept, options, onConfirm, onSkip, onCl
         details[o.id] = v.trim()
       }
     }
-    if ((!options || options.length === 0) && typeof values.freeform === 'string' && values.freeform.trim()) {
-      details.freeform = values.freeform.trim()
-    }
     onConfirm(details)
   }
 
@@ -65,17 +61,7 @@ export default function RefineDialog({ concept, options, onConfirm, onSkip, onCl
         <button className="toolbar-btn" onClick={onClose}>关闭</button>
       </div>
       <div className="refine-content">
-        {(!options || options.length === 0) ? (
-          <div className="refine-item">
-            <div className="section-title">自由补充</div>
-            <input
-              className="concept-input-box"
-              placeholder={"请填写你希望补充的细节"}
-              value={values.freeform || ''}
-              onChange={(e) => changeText('freeform', e.target.value)}
-            />
-          </div>
-        ) : ( (options || []).map((o) => (
+        {(options || []).map((o) => (
           <div key={o.id} className="refine-item">
             <div className="section-title">{o.title}</div>
             {o.type === 'multi-select' ? (
@@ -98,7 +84,7 @@ export default function RefineDialog({ concept, options, onConfirm, onSkip, onCl
             )}
             {o.description ? <div className="muted">{o.description}</div> : null}
           </div>
-        )) )}
+        ))}
       </div>
       <div className="refine-actions">
         <button className="secondary" onClick={onSkip}>直接生成</button>

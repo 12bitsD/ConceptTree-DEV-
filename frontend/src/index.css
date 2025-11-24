@@ -207,6 +207,14 @@ input::placeholder {
   transform: translateY(-2px);
 }
 
+.chip.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
 /* ===== Graph View Styles ===== */
 .graph-grid {
   display: flex;

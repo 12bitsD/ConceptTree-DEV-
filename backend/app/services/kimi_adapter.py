@@ -9,7 +9,7 @@ async def generate_refine_options(concept: str) -> List[Dict[str, Any]]:
     api_url = os.getenv("KIMI_API_URL", "https://api.moonshot.cn/v1/chat/completions")
     model = os.getenv("KIMI_MODEL", "kimi-k2-turbo-preview")
     if not api_key:
-        return []
+        raise RuntimeError("missing_api_key")
     try:
         system = (
             "你是一个产品助理，负责为用户输入的任务生成结构化的补充细节选项。"
@@ -34,7 +34,7 @@ async def generate_refine_options(concept: str) -> List[Dict[str, Any]]:
         async with httpx.AsyncClient(timeout=httpx.Timeout(15.0)) as client:
             resp = await client.post(api_url, headers=headers, json=payload)
         if resp.status_code != 200:
-            return []
+            raise RuntimeError(f"bad_status:{resp.status_code}")
         data = resp.json()
         content = None
         try:
@@ -44,15 +44,15 @@ async def generate_refine_options(concept: str) -> List[Dict[str, Any]]:
         except Exception:
             content = None
         if not content:
-            return []
+            raise RuntimeError("empty_content")
         try:
             parsed = json.loads(content)
         except Exception:
-            return []
+            raise RuntimeError("json_parse_error")
         if isinstance(parsed, dict) and "options" in parsed:
             parsed = parsed["options"]
         if not isinstance(parsed, list):
-            return []
+            raise RuntimeError("invalid_structure")
         result: List[Dict[str, Any]] = []
         for o in parsed:
             try:
@@ -76,5 +76,30 @@ async def generate_refine_options(concept: str) -> List[Dict[str, Any]]:
             except Exception:
                 continue
         return result
-    except Exception:
-        return []
+    except Exception as e:
+        raise e
+
+async def check_kimi_status() -> Dict[str, Any]:
+    api_key = os.getenv("KIMI_API_KEY")
+    api_url = os.getenv("KIMI_API_URL", "https://api.moonshot.cn/v1/chat/completions")
+    model = os.getenv("KIMI_MODEL", "kimi-k2-turbo-preview")
+    env_present = bool(api_key)
+    can_call = False
+    if env_present:
+        try:
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": "ping"},
+                    {"role": "user", "content": "ping"},
+                ],
+                "temperature": 0,
+            }
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            async with httpx.AsyncClient(timeout=httpx.Timeout(5.0)) as client:
+                resp = await client.post(api_url, headers=headers, json=payload)
+            if resp.status_code == 200:
+                can_call = True
+        except Exception:
+            can_call = False
+    return {"env_present": env_present, "can_call": can_call, "model": model, "api_url": api_url}
